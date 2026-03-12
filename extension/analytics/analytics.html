@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>sleep-scroll — Analytics</title>
+  <link rel="stylesheet" href="analytics.css" />
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <span>🌙</span>
+      <h1>sleep analytics</h1>
+    </header>
+
+    <!-- Summary cards -->
+    <div class="cards">
+      <div class="card">
+        <span class="card-value" id="stat-streak">—</span>
+        <span class="card-label">night streak</span>
+      </div>
+      <div class="card">
+        <span class="card-value" id="stat-total">—</span>
+        <span class="card-label">total sessions</span>
+      </div>
+      <div class="card">
+        <span class="card-value" id="stat-avg">—</span>
+        <span class="card-label">avg duration</span>
+      </div>
+    </div>
+
+    <!-- 7-day grid -->
+    <section>
+      <h2>Last 7 nights</h2>
+      <div class="week-grid" id="week-grid"></div>
+    </section>
+
+    <!-- Recent sessions -->
+    <section>
+      <h2>Recent sessions</h2>
+      <div id="session-list">
+        <p class="empty">No sessions recorded yet.</p>
+      </div>
+    </section>
+
+  </div>
+  <script src="analytics.js"></script>
+</body>
+</html>

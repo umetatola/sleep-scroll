@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sleep-scroll</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <span class="logo">🌙</span>
+      <h1>sleep-scroll</h1>
+    </header>
+
+    <!-- Onboarding: shown first time only -->
+    <div id="view-onboarding" class="view hidden">
+      <p class="onboard-title">How do you like to wind down?</p>
+      <p class="onboard-sub">This appears when it's time to sleep</p>
+      <div class="style-list">
+        <button class="style-btn" data-style="breathing">
+          <span class="style-icon">🫁</span>
+          <span class="style-info">
+            <span class="style-name">Breathing guide</span>
+            <span class="style-hint">Paced breathing animation</span>
+          </span>
+        </button>
+        <button class="style-btn" data-style="reflection">
+          <span class="style-icon">🙏</span>
+          <span class="style-info">
+            <span class="style-name">Reflection</span>
+            <span class="style-hint">Gratitude &amp; calming prompts</span>
+          </span>
+        </button>
+        <button class="style-btn" data-style="journaling">
+          <span class="style-icon">📓</span>
+          <span class="style-info">
+            <span class="style-name">Journal prompt</span>
+            <span class="style-hint">A nightly reflection question</span>
+          </span>
+        </button>
+        <button class="style-btn" data-style="sounds">
+          <span class="style-icon">🎵</span>
+          <span class="style-info">
+            <span class="style-name">Ambient sounds</span>
+            <span class="style-hint">Reminder to put on calming audio</span>
+          </span>
+        </button>
+        <button class="style-btn" data-style="silence">
+          <span class="style-icon">🌑</span>
+          <span class="style-info">
+            <span class="style-name">Silence</span>
+            <span class="style-hint">Dark screen, no prompts</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Inactive state -->
+    <div id="view-inactive" class="view hidden">
+      <div class="field">
+        <label>Wind-down duration</label>
+        <div class="duration-row">
+          <button class="dur-btn" data-min="15">15 min</button>
+          <button class="dur-btn active" data-min="30">30 min</button>
+          <button class="dur-btn" data-min="45">45 min</button>
+          <button class="dur-btn" data-min="60">60 min</button>
+        </div>
+      </div>
+
+      <div class="style-row">
+        <span class="style-row-label">Wind-down: <span id="style-current">—</span></span>
+        <button id="btn-change-style" class="style-change-btn">change</button>
+      </div>
+
+      <div class="schedule-row">
+        <span class="schedule-label">Auto-start at</span>
+        <label class="toggle">
+          <input type="checkbox" id="schedule-enabled" />
+          <span class="toggle-track"></span>
+        </label>
+        <input type="time" id="schedule-time" value="22:30" class="time-input" />
+      </div>
+
+      <button id="btn-start" class="btn-primary">Start Sleep Mode</button>
+      <div class="footer-links">
+        <button id="btn-analytics" class="footer-link">📊 Analytics</button>
+        <button id="btn-settings"  class="footer-link">⚙ Settings</button>
+      </div>
+    </div>
+
+    <!-- Active state -->
+    <div id="view-active" class="view hidden">
+      <div class="ring" id="ring">
+        <span class="ring-phase" id="ring-phase">Monitoring</span>
+        <span class="ring-time" id="ring-time">--:--</span>
+      </div>
+      <p class="phase-desc" id="phase-desc">Scrolling is allowed normally.</p>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <button id="btn-stop" class="btn-secondary">End Sleep Mode</button>
+    </div>
+
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

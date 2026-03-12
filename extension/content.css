@@ -1,0 +1,199 @@
+/* All sleep-scroll injected UI. Prefixed ss- to avoid collisions with host pages. */
+
+.ss-banner,
+.ss-overlay {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+/* ── Phase 1: top banner ──────────────────────────────────────────────── */
+
+.ss-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(12, 10, 28, 0.93);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #d8d0ee;
+  border-bottom: 1px solid rgba(140, 90, 200, 0.3);
+  animation: ss-slide-down 0.3s ease;
+}
+
+.ss-banner .ss-icon {
+  font-size: 16px;
+}
+
+.ss-banner .ss-timer {
+  font-weight: 600;
+  color: #c8a0e8;
+  font-variant-numeric: tabular-nums;
+}
+
+.ss-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #605080;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.ss-dismiss:hover {
+  color: #b0a0c8;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Phase 2: dim overlay ─────────────────────────────────────────────── */
+
+.ss-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ss-fade-in 0.5s ease;
+}
+
+.ss-dim {
+  background: rgba(6, 4, 18, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.ss-block {
+  background: rgba(4, 3, 14, 0.97);
+}
+
+/* ── Card (phases 2 & 3) ─────────────────────────────────────────────── */
+
+.ss-card {
+  text-align: center;
+  color: #e0d8f4;
+  padding: 44px 48px;
+  border-radius: 24px;
+  max-width: 380px;
+  width: 90%;
+}
+
+.ss-moon {
+  font-size: 52px;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.ss-moon-lg {
+  font-size: 76px;
+  margin-bottom: 18px;
+}
+
+.ss-heading {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f0eaff;
+  margin: 0 0 8px;
+}
+
+.ss-sub {
+  font-size: 15px;
+  color: #9080b8;
+  margin: 0 0 24px;
+}
+
+.ss-timer {
+  font-weight: 600;
+  color: #c8a0e8;
+  font-variant-numeric: tabular-nums;
+}
+
+.ss-snooze-btn {
+  background: rgba(140, 90, 200, 0.18);
+  border: 1px solid rgba(140, 90, 200, 0.35);
+  color: #c0a0e0;
+  padding: 10px 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.ss-snooze-btn:hover {
+  background: rgba(140, 90, 200, 0.32);
+}
+
+/* ── Phase 3: text prompts (reflection / journaling / sounds) ────────── */
+
+.ss-prompt {
+  font-size: 15px;
+  color: #c0b0e0;
+  line-height: 1.5;
+  margin: 0;
+  font-style: italic;
+  transition: opacity 0.4s;
+}
+
+.ss-prompt-label {
+  font-size: 11px;
+  color: #5a4878;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+}
+
+/* ── Phase 3: breathing guide ────────────────────────────────────────── */
+
+.ss-breathe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.ss-breathe-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(140, 90, 200, 0.55), rgba(60, 30, 120, 0.15));
+  border: 1px solid rgba(140, 90, 200, 0.45);
+  animation: ss-breathe 8s ease-in-out infinite;
+}
+
+.ss-breathe-label {
+  font-size: 13px;
+  color: #9080b8;
+  margin: 0;
+  min-height: 18px;
+  transition: opacity 0.4s;
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────── */
+
+@keyframes ss-slide-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes ss-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes ss-breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.55; }
+  25%       { transform: scale(1.35); opacity: 1;    }
+  50%       { transform: scale(1.35); opacity: 1;    }
+  75%       { transform: scale(1);    opacity: 0.55; }
+}
