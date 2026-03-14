@@ -59,21 +59,36 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
             SKIP_INSTALL=NO \
-            2>&1 | tail -50
+            STRIP_INSTALLED_PRODUCT=NO \
+            COPY_PHASE_STRIP=NO \
+            2>&1 | tail -80
 
       - name: Package as unsigned IPA
         run: |
+          echo "=== All .app bundles found ==="
+          find DerivedData -name "*.app" | sort
+
+          # Find the main app (not extension) built for iphoneos
           APP_PATH=$(find DerivedData -name "*.app" \
-            | grep -v ".appex" \
+            | grep -v "\.appex" \
             | grep -i "iphoneos" \
             | head -1)
 
           if [ -z "$APP_PATH" ]; then
             echo "Falling back to any .app in DerivedData"
-            APP_PATH=$(find DerivedData -name "*.app" | grep -v ".appex" | head -1)
+            APP_PATH=$(find DerivedData -name "*.app" | grep -v "\.appex" | head -1)
           fi
 
           echo "Packaging: $APP_PATH"
+
+          # Verify Info.plist exists
+          if [ ! -f "$APP_PATH/Info.plist" ]; then
+            echo "ERROR: Info.plist not found in $APP_PATH"
+            echo "Contents of app bundle:"
+            ls -la "$APP_PATH"
+            exit 1
+          fi
+
           mkdir -p Payload
           cp -r "$APP_PATH" Payload/
           zip -r sleep-scroll.ipa Payload/
