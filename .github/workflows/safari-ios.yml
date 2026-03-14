@@ -29,6 +29,27 @@ jobs:
             --no-open \
             safari-extension/
 
+      - name: Add app icon to generated Xcode project
+        run: |
+          RESOURCES_DIR=$(find . -name "Resources" \
+            -not -path "*/DerivedData/*" -not -path "*/.git/*" | head -1)
+          echo "Resources dir: $RESOURCES_DIR"
+          mkdir -p "$RESOURCES_DIR"
+          cat > /tmp/make_icon.py << 'PYEOF'
+          import struct, zlib, sys
+          def make_png(w, h, rgb=(0, 128, 128)):
+              def chunk(name, data):
+                  crc = zlib.crc32(name + data) & 0xffffffff
+                  return struct.pack('>I', len(data)) + name + data + struct.pack('>I', crc)
+              ihdr = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
+              row = b'\x00' + bytes(rgb) * w
+              idat = zlib.compress(row * h)
+              return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr) + chunk(b'IDAT', idat) + chunk(b'IEND', b'')
+          open(sys.argv[1], 'wb').write(make_png(128, 128))
+          PYEOF
+          python3 /tmp/make_icon.py "$RESOURCES_DIR/Icon.png"
+          ls -lh "$RESOURCES_DIR/Icon.png"
+
       - name: Discover generated project and scheme
         id: proj
         run: |
@@ -38,7 +59,6 @@ jobs:
 
           SCHEME=$(xcodebuild -list -project "$PROJECT" 2>/dev/null \
             | awk '/Schemes:/,0' | grep -v "Schemes:" | grep "iOS" | head -1 | xargs)
-          # Fallback: first scheme
           if [ -z "$SCHEME" ]; then
             SCHEME=$(xcodebuild -list -project "$PROJECT" 2>/dev/null \
               | awk '/Schemes:/,0' | grep -v "Schemes:" | head -1 | xargs)
