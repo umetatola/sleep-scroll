@@ -1,0 +1,65 @@
+name: iOS
+
+on:
+  push:
+    paths: ['ios/**', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Core unit tests
+        run: |
+          set -o pipefail
+          swift test --package-path SleepScrollCore 2>&1 | bash ci/annotate.sh
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build for simulator
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project SleepScroll.xcodeproj \
+            -scheme SleepScroll \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | bash ci/annotate.sh | grep -E "error|BUILD (SUCCEEDED|FAILED)|^::" ; test "${PIPESTATUS[0]}" -eq 0
+
+      - name: Build for device (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project SleepScroll.xcodeproj \
+            -scheme SleepScroll \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | bash ci/annotate.sh | grep -E "error|BUILD (SUCCEEDED|FAILED)|^::" ; test "${PIPESTATUS[0]}" -eq 0
+          APP=build/Build/Products/Release-iphoneos/SleepScroll.app
+          echo "Extensions bundled:"
+          ls "$APP/PlugIns"
+          mkdir -p Payload && cp -R "$APP" Payload/ && zip -qr sleep-scroll-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sleep-scroll-ios-unsigned
+          path: ios/sleep-scroll-unsigned.ipa
+          retention-days: 30
