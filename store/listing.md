@@ -56,14 +56,19 @@ All data stays on your device in Chrome's local storage. sleep-scroll makes no n
 
 ---
 
-## Screenshots needed (1280×800 or 640×400)
+## Screenshots (1280×800)
 
-Take screenshots of:
-1. The popup — inactive state showing duration + schedule toggle
-2. The popup — active state showing countdown ring
-3. YouTube with the phase 2 banner visible
-4. YouTube with the phase 3 wind-down overlay (breathing style)
-5. The analytics page showing the 7-day grid
+In `store/screenshots/`, rendered from the real extension code with `node store/screenshots/make-shots.js`
+(re-run after UI changes). The in-page shots sit on a neutral mock feed, so no real site's branding
+appears. The store takes at most 5, so upload these in order:
+
+1. `1-popup-start.png`: popup, duration picker + auto-start
+2. `2-popup-active.png`: popup during a session (countdown ring)
+3. `3-banner.png`: phase 1 "starting soon" banner over a feed
+4. `5-winddown.png`: final phase, breathing wind-down
+5. `6-analytics.png`: streak, 7-night grid, session log
+
+(`4-dim.png`, the dim + snooze phase, is the spare: swap it in for #2 if you'd rather show every phase.)
 
 ## Promotional tile (440×280) — optional but recommended
 Dark purple background (#0a0816), large moon icon, "sleep-scroll" wordmark in light purple.
@@ -74,7 +79,7 @@ Dark purple background (#0a0816), large moon icon, "sleep-scroll" wordmark in li
 
 - [x] Icons generated and placed in `extension/icons/` (16, 32, 48, 128 PNG)
 - [x] Privacy policy URL live and accessible: https://umetatola.github.io/sleep-scroll/store/privacy-policy (GitHub Pages)
-- [ ] Screenshots taken (at least 1, up to 5)
+- [x] Screenshots taken (at least 1, up to 5): see "Screenshots" above
 - [x] Extension zipped: `bash store/package-extension.sh` → `dist/sleep-scroll-extension-<version>.zip` (folder contents at the zip root, dev-only icon generators left out, every manifest path checked)
 - [ ] Developer account created at chrome.google.com/webstore/devconsole ($5 one-time fee)
 - [ ] Version set to 1.0.0 in manifest.json ✅
