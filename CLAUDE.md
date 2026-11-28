@@ -80,6 +80,9 @@ Derived from `research.md` — these must guide every product decision:
 - **Popup**: just re-open it
 - **Options / Analytics pages**: reload the open tab
 
+### Package for the Chrome Web Store
+`bash store/package-extension.sh` → `dist/sleep-scroll-extension-<manifest version>.zip` (gitignored). Listing text and checklist: `store/listing.md`. Privacy policy is served by GitHub Pages at https://umetatola.github.io/sleep-scroll/store/privacy-policy.
+
 ### Debug
 - **Background logs**: click "Service Worker" on the extension card
 - **Content script logs**: DevTools console on the target tab

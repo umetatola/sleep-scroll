@@ -72,9 +72,9 @@ Dark purple background (#0a0816), large moon icon, "sleep-scroll" wordmark in li
 
 ## Store checklist before submitting
 
-- [ ] Icons generated and placed in `extension/icons/` (16, 32, 48, 128 PNG)
-- [ ] Privacy policy URL live and accessible
+- [x] Icons generated and placed in `extension/icons/` (16, 32, 48, 128 PNG)
+- [x] Privacy policy URL live and accessible: https://umetatola.github.io/sleep-scroll/store/privacy-policy (GitHub Pages)
 - [ ] Screenshots taken (at least 1, up to 5)
-- [ ] Extension zipped (zip the `extension/` folder contents, not the folder itself)
+- [x] Extension zipped: `bash store/package-extension.sh` → `dist/sleep-scroll-extension-<version>.zip` (folder contents at the zip root, dev-only icon generators left out, every manifest path checked)
 - [ ] Developer account created at chrome.google.com/webstore/devconsole ($5 one-time fee)
 - [ ] Version set to 1.0.0 in manifest.json ✅
