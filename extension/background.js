@@ -78,10 +78,17 @@ async function broadcastPhase() {
   }
 }
 
+// "YYYY-MM-DD" in the user's local timezone. toISOString() is UTC, which put
+// late-night/early-morning sessions on the wrong day for anyone east or west of UTC.
+function localDateStr(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 async function recordSession(startTime, durationMinutes, completed) {
   const { sessions = [] } = await chrome.storage.local.get('sessions');
   sessions.push({
-    date:      new Date(startTime).toISOString().split('T')[0],
+    date:      localDateStr(new Date(startTime)),
     startTime,
     endTime:   Date.now(),
     duration:  durationMinutes,
@@ -128,9 +135,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   if (message.type === 'STOP_SLEEP_MODE') {
     chrome.storage.local.get('sleepMode', ({ sleepMode }) => {
-      const start = sleepMode?.startTime ?? Date.now();
-      const dur   = sleepMode?.duration ?? 30;
-      recordSession(start, dur, false).then(() => {
+      // Nothing running (e.g. a second click after the session already ended): don't log a fake session.
+      const record = sleepMode?.active
+        ? recordSession(sleepMode.startTime, sleepMode.duration, false)
+        : Promise.resolve();
+      record.then(() => {
         chrome.storage.local.set({ sleepMode: { active: false } }).then(() => {
           chrome.alarms.clear('sleep-tick');
           broadcastClear();

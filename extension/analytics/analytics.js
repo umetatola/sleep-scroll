@@ -15,8 +15,10 @@ function fmtDate(dateStr) {
   return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+// Local-timezone "YYYY-MM-DD" (must match localDateStr in background.js)
 function toDateStr(date) {
-  return date.toISOString().split('T')[0];
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 // Most recent session per calendar date
@@ -39,11 +41,13 @@ function renderCards(sessions) {
   const avg = Math.round(sessions.reduce((a, s) => a + s.duration, 0) / sessions.length);
   document.getElementById('stat-avg').textContent = `${avg}m`;
 
-  // Current streak (consecutive days going back from today)
+  // Current streak: consecutive days going back from today. If tonight's
+  // session hasn't happened yet, count from yesterday — the streak isn't broken.
   const map = byDate(sessions);
   let streak = 0;
   const today = new Date();
-  for (let i = 0; i < 365; i++) {
+  const startBack = map[toDateStr(today)] ? 0 : 1;
+  for (let i = startBack; i < 365 + startBack; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     if (map[toDateStr(d)]) streak++;
