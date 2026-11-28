@@ -80,6 +80,9 @@ Derived from `research.md` — these must guide every product decision:
 - **Popup**: just re-open it
 - **Options / Analytics pages**: reload the open tab
 
+### Package for the Chrome Web Store
+`bash store/package-extension.sh` → `dist/sleep-scroll-extension-<manifest version>.zip` (gitignored). Listing text and checklist: `store/listing.md`. Privacy policy is served by GitHub Pages at https://umetatola.github.io/sleep-scroll/store/privacy-policy.
+
 ### Debug
 - **Background logs**: click "Service Worker" on the extension card
 - **Content script logs**: DevTools console on the target tab
@@ -101,7 +104,8 @@ Manifest V3, no build tooling — vanilla JS loaded directly by the browser.
 | `content.css` | All injected styles (prefixed `ss-` to avoid host-page collisions) |
 | `popup/popup.{html,js,css}` | Popup: start/stop, countdown, schedule toggle, analytics + settings links |
 | `options/options.{html,js,css}` | Settings page: target sites checkboxes, normal/strict intensity mode |
-| `analytics/analytics.{html,js,css}` | Analytics page: streak, 7-day grid, recent sessions |
+| `analytics/analytics.{html,js,css}` | Analytics page: streak (not broken until tonight is missed), 7-day grid, recent sessions |
+| `icons/` | `icon{16,32,48,128}.png` are committed; regenerate with `node extension/icons/make-icons.js` (same drawing as `generate-icons.html`) |
 
 ### State (`chrome.storage.local`)
 
@@ -121,7 +125,7 @@ schedule: {
 mode: 'normal' | 'strict'  // strict = no dismiss, no snooze
 targetSites: string[]      // keys: ['tiktok','instagram','youtube','twitter','facebook','reddit']
 sessions: Array<{
-  date: string,            // "YYYY-MM-DD"
+  date: string,            // "YYYY-MM-DD", local timezone of startTime
   startTime: number,
   endTime: number,
   duration: number,        // configured minutes
@@ -200,7 +204,7 @@ Start → `SleepController.start` saves state and launches `SleepService`. Each 
 
 ### Deliberate differences from the extension
 - Overlays also have a **"Leave this app / Go to home screen"** button (replace, don't just remove) — strict mode only removes dismiss/snooze.
-- Streak is not broken while tonight's session hasn't happened yet; dates use the local timezone (the extension used UTC).
+- (Streak grace and local-timezone dates used to be Android-only; the extension now does the same.)
 
 ### Emulator testing
 **Never install this app on the Pixel 8 Pro (serial `37131FDJG003M9`) — it's a research device.** Always pass `-s emulator-5554`.
