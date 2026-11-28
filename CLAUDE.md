@@ -38,7 +38,7 @@ Research finding: **check frequency and emotional investment predict poor sleep 
 ### Recommended Build Order
 1. **Browser extension** ✅ — built and working
 2. **Android app** ✅ — built (`android/`), builds + unit tests pass; full flow verified on an Android 14 emulator (not yet on a real phone — see "Android app" below)
-3. **iOS app** — second mobile target once Android approach is proven
+3. **iOS app** 🚧 — built (`ios/`), CI builds + unit tests on a macOS runner; **never run on a device** (see "iOS app" below)
 
 ### Android (highest capability)
 - Accessibility Services API — detect foreground app
@@ -222,3 +222,35 @@ Fixed during that pass: phase 2 scrim was too light over white apps (now `#F0…
 ### Still needs a real phone
 Usage-access foreground detection per OEM, exact-alarm start from the background on Android 12–14, foreground-service start from `ScheduleReceiver`/`BootReceiver`, battery/Doze behaviour overnight. Play Store release will need justification text for `PACKAGE_USAGE_STATS`, `SYSTEM_ALERT_WINDOW` and the `specialUse` FGS type, plus a signing config (none is set up).
 
+
+---
+
+## iOS app (`ios/`)
+
+SwiftUI, iOS 16+, built on the Screen Time APIs (FamilyControls / DeviceActivity / ManagedSettings). No network. Same phases, wind-down styles, snooze/strict modes, nightly schedule and session history as Android.
+
+### No Mac here — CI is the compiler
+This Windows machine has no Xcode. `.github/workflows/ios.yml` (macOS runner) runs `swift test` on the core package, generates the project with XcodeGen from `ios/project.yml` (the `.xcodeproj`, Info.plists and entitlements are generated, not committed), and builds for simulator and device (unsigned IPA artifact). `ios/ci/annotate.sh` turns compiler/XCTest errors into GitHub annotations, so failures can be read without signing in:
+```
+curl -s https://api.github.com/repos/umetatola/sleep-scroll/check-runs/<check_run_id>/annotations
+```
+
+### Layout
+| Path | Role |
+|---|---|
+| `SleepScrollCore/` | Pure Swift package (Foundation only): models, `SleepLogic` (phases, phase start times, snooze, streak/analytics), `WindDownContent`, `ShieldText`. XCTest suite mirrors the Android unit tests |
+| `Shared/` | iOS-only, compiled into the app **and** every extension: `SharedStore` (App Group `group.com.sleepscroll.ios` UserDefaults, JSON), `SleepEngine` (start / apply / snooze / finish, DeviceActivity scheduling, shields), `Notifications` |
+| `App/` | SwiftUI: `AppModel` + Tonight / Progress / Settings tabs, `WindDownView` (breathing, reflection, journaling, sounds, silence) |
+| `Monitor/` | `DeviceActivityMonitor` extension — woken at each phase boundary and at bedtime |
+| `ShieldConfig/` | `ShieldConfigurationDataSource` — title/subtitle/buttons of the shield |
+| `ShieldAction/` | `ShieldActionDelegate` — "Close app" closes, "Snooze" calls `SleepEngine.snooze()` and returns `.defer` |
+
+### How iOS differs from Android (platform limits, not choices)
+- **No overlays.** iOS apps can't draw over other apps, so: phase 1 = "starting soon" notification; phase 2 = Screen Time shield on the chosen apps with Snooze (normal mode); phase 3 = shield without Snooze + a notification that opens the full wind-down screen in the app.
+- **Apps are opaque tokens.** The user picks apps with `FamilyActivityPicker`; we never learn which apps they are, so there's no fixed TikTok/Instagram list.
+- **No foreground polling.** Phase changes come from DeviceActivity: one one-shot activity per remaining boundary (`phase1/2/3`, `end`), each padded to the 15-minute minimum interval; only `intervalDidStart` is used. Snooze re-schedules the remaining boundaries. Nightly schedule = a repeating `nightly` activity whose start launches a session from the monitor.
+
+### Needs a real iPhone + Apple Developer account to verify (never run so far)
+- Family Controls entitlement: works for development signing; **App Store distribution needs Apple's approval** of the Family Controls (Distribution) entitlement.
+- Signing: set `DEVELOPMENT_TEAM` and register the App Group; none is set up.
+- Unverified on device: DeviceActivity timing accuracy for short one-shot schedules, `.defer` reopening the app after snooze, calling `DeviceActivityCenter` from the shield-action extension, notifications posted from extensions, shields in the simulator (they don't apply there).
