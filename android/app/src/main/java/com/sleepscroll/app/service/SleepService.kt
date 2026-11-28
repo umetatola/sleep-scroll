@@ -43,6 +43,7 @@ class SleepService : Service() {
         val state = SleepRepository.sleep.value
         val remaining = SleepLogic.remainingMs(state.startTime, state.duration, System.currentTimeMillis())
         startInForeground(remaining)
+        Notifications.cancelStartPending(this)
 
         if (intent?.action == Notifications.ACTION_STOP) {
             SleepController.stop(this)

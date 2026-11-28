@@ -174,12 +174,12 @@ Uses `chrome.alarms.create('schedule-alarm', { when: nextOccurrence(time), perio
 
 ## Android app (`android/`)
 
-Kotlin + Jetpack Compose, minSdk 26 / target 34, no network permission. Same phases, wind-down styles, snooze/strict modes, schedule and session history as the extension.
+Kotlin + Jetpack Compose, minSdk 26 / target 36 (Google Play requires API 36 for new apps since 2026-08-31), no network permission. Same phases, wind-down styles, snooze/strict modes, schedule and session history as the extension.
 
 ### Build / test
 ```
 cd android
-# needs JDK 17 and the Android SDK (platform 34); put sdk.dir in android/local.properties (gitignored)
+# needs JDK 17 and the Android SDK (platform 36); put sdk.dir in android/local.properties (gitignored)
 ./gradlew testDebugUnitTest lintDebug assembleDebug     # debug APK: app/build/outputs/apk/debug/
 ./gradlew assembleRelease                               # minified, unsigned
 ```
@@ -205,7 +205,7 @@ Start → `SleepController.start` saves state and launches `SleepService`. Each 
 ### Emulator testing
 **Never install this app on the Pixel 8 Pro (serial `37131FDJG003M9`) — it's a research device.** Always pass `-s emulator-5554`.
 
-AVD `sleepscroll_api34` (Android 14, Google Play image, YouTube preinstalled) lives in the SDK above:
+AVDs `sleepscroll_api36` (Android 16) and `sleepscroll_api34` (Android 14), both Google Play images with YouTube preinstalled, live in the SDK above. Only one runs at a time, so either one is `emulator-5554`:
 ```
 C:\Users\tola\android-sdk\emulator\emulator.exe -avd sleepscroll_api34 -no-snapshot-save -no-boot-anim
 adb -s emulator-5554 install -r android/app/build/outputs/apk/debug/app-debug.apk
@@ -219,6 +219,10 @@ Start a 15-min session in the app, then `android/tools/fast-forward.sh <minutes-
 
 Fixed during that pass: phase 2 scrim was too light over white apps (now `#F0…`), phase 3 is fully opaque, outlined buttons have a solid fill, and the overlay timer kept losing its "Closing in" prefix after the first tick.
 
+**Verified on the Android 16 emulator after the target-36 bump (2026-11-29):** Tonight screen edge-to-edge (system-bar icons forced light; they were near-invisible when the phone was in light mode), phase 2 and 3 overlays over YouTube, now covering the status/nav bars too (`fitInsetsTypes = 0`). Scheduled start with exact alarms allowed: FGS start allowed (`ALARM_MANAGER_WHILE_IDLE`), on the minute. With exact alarms **denied** (inexact fallback) Android 15+ refuses the background FGS start (`Background started FGS: Disallowed`, because holding overlay permission no longer exempts a target-35+ app). `SleepController.start` then posts a "Bedtime" notification (id 1003), and opening the app resumes the session via `MainActivity.onStart → resumeOrFinish`. Also fixed: `ForegroundAppDetector` could miss a foreground switch when its usage event became queryable just after a poll, so each poll now overlaps the previous one by 10 s.
+
+Handy for schedule tests (debug build): write `sched_enabled/sched_hour/sched_minute` into `shared_prefs/sleep_scroll.xml` with `run-as`, toggle `adb shell appops set com.sleepscroll.app SCHEDULE_EXACT_ALARM allow|deny`, open the app once (re-arms the alarm), press Home, and watch `logcat | grep "Background started FGS"`.
+
 ### Still needs a real phone
-Usage-access foreground detection per OEM, exact-alarm start from the background on Android 12–14, foreground-service start from `ScheduleReceiver`/`BootReceiver`, battery/Doze behaviour overnight. Play Store release will need justification text for `PACKAGE_USAGE_STATS`, `SYSTEM_ALERT_WINDOW` and the `specialUse` FGS type, plus a signing config (none is set up).
+Usage-access foreground detection per OEM, BOOT_COMPLETED resume, battery/Doze behaviour overnight. Play Store release will need justification text for `PACKAGE_USAGE_STATS`, `SYSTEM_ALERT_WINDOW` and the `specialUse` FGS type, plus a signing config (none is set up).
 

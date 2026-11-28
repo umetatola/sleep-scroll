@@ -17,6 +17,7 @@ object Notifications {
     const val CHANNEL_NIGHT = "good_night"
     const val ID_ACTIVE = 1001
     const val ID_NIGHT = 1002
+    const val ID_START = 1003
     const val ACTION_STOP = "com.sleepscroll.app.STOP"
 
     fun createChannels(context: Context) {
@@ -56,6 +57,26 @@ object Notifications {
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
     }
+
+    /** The nightly session was saved but its service couldn't start in the background. */
+    fun showStartPending(context: Context) {
+        if (!Permissions.hasNotifications(context)) return
+        val open = PendingIntent.getActivity(
+            context, 3, Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val n = NotificationCompat.Builder(context, CHANNEL_NIGHT)
+            .setSmallIcon(R.drawable.ic_moon)
+            .setContentTitle("Bedtime 🌙")
+            .setContentText("Your wind-down has begun. Tap to turn it on.")
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .build()
+        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(ID_START, n)
+    }
+
+    fun cancelStartPending(context: Context) =
+        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancel(ID_START)
 
     fun showGoodNight(context: Context) {
         if (!Permissions.hasNotifications(context)) return
