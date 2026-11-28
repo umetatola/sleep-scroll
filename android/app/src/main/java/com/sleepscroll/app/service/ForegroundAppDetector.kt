@@ -15,8 +15,12 @@ class ForegroundAppDetector(context: Context) {
 
     @Suppress("DEPRECATION") // MOVE_TO_* are the only constants available on API 26-28
     fun poll(now: Long = System.currentTimeMillis()): String? {
-        // First poll looks back a couple of minutes to learn what is on screen right now.
-        val from = if (lastQuery == 0L) now - 2 * 60_000L else lastQuery
+        // First poll looks back a couple of minutes to learn what is on screen right now. Later polls
+        // overlap the previous window: an event can be stamped just before the last poll but only
+        // become queryable after it, and without the overlap it was skipped forever (seen on the
+        // API 36 emulator: YouTube came to the front and no overlay appeared). Replaying events in
+        // order is harmless, since the last relevant event in the window decides.
+        val from = if (lastQuery == 0L) now - 2 * 60_000L else lastQuery - OVERLAP_MS
         try {
             val events = usage.queryEvents(from, now)
             val e = UsageEvents.Event()
@@ -33,5 +37,9 @@ class ForegroundAppDetector(context: Context) {
             current = null
         }
         return current
+    }
+
+    private companion object {
+        const val OVERLAP_MS = 10_000L
     }
 }

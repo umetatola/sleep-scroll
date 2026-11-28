@@ -55,14 +55,7 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED && intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
         SleepRepository.init(context)
         Scheduler.apply(context)
-        val sleep = SleepRepository.sleep.value
-        if (sleep.active) {
-            if (SleepLogic.remainingMs(sleep.startTime, sleep.duration, System.currentTimeMillis()) > 0) {
-                SleepController.resume(context)
-            } else {
-                SleepController.finish(context)
-            }
-        }
+        SleepController.resumeOrFinish(context)
     }
 }
 

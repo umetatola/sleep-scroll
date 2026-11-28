@@ -14,13 +14,32 @@ object SleepController {
         SleepRepository.init(context)
         if (SleepRepository.sleep.value.active) return
         SleepRepository.setSleep(SleepState(true, System.currentTimeMillis(), durationMinutes))
-        launchService(context)
+        // From the background (the nightly schedule) Android can refuse to start a foreground
+        // service: e.g. an inexact alarm on Android 12+, or, targeting 15+, holding overlay
+        // permission no longer exempts us. The session is saved, so ask the user to open the app,
+        // which resumes it.
+        if (!launchService(context)) Notifications.showStartPending(context)
     }
 
     /** Re-launch the service for a session that is already active (boot, process death). */
     fun resume(context: Context) {
         SleepRepository.init(context)
         if (SleepRepository.sleep.value.active) launchService(context)
+    }
+
+    /**
+     * Pick up a saved session: restart its service if time is left, or record it if it ran out
+     * while nothing was running. Safe to call repeatedly (app start, boot, every app open).
+     */
+    fun resumeOrFinish(context: Context) {
+        SleepRepository.init(context)
+        val sleep = SleepRepository.sleep.value
+        if (!sleep.active) return
+        if (SleepLogic.remainingMs(sleep.startTime, sleep.duration, System.currentTimeMillis()) > 0) {
+            resume(context)
+        } else {
+            finish(context)
+        }
     }
 
     /** Stopped by the user before the end. */
@@ -47,11 +66,12 @@ object SleepController {
         if (completed) Notifications.showGoodNight(context)
     }
 
-    private fun launchService(context: Context) {
+    /** False if Android refused the start (background-start restrictions). */
+    private fun launchService(context: Context): Boolean =
         try {
             ContextCompat.startForegroundService(context, Intent(context, SleepService::class.java))
+            true
         } catch (_: Exception) {
-            // Background-start restrictions can reject this; the state is saved, so the next app open resumes it.
+            false
         }
-    }
 }

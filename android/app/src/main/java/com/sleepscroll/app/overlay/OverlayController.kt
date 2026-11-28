@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
@@ -98,7 +99,15 @@ class OverlayController(private val context: Context) {
         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
         PixelFormat.TRANSLUCENT,
-    )
+    ).apply {
+        // By default overlay windows stop at the status and navigation bars, leaving the app's
+        // (often bright) bars showing above and below the dim / wind-down screen. Cover them too;
+        // the content is centred, so nothing ends up under the system icons.
+        if (Build.VERSION.SDK_INT >= 30) {
+            fitInsetsTypes = 0
+            layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+        }
+    }
 
     // ── Phase 1: banner ──────────────────────────────────────────────────────
 
